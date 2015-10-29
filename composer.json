@@ -1,0 +1,37 @@
+{
+	"name": "kdyby/csob-paygate-nette",
+	"type": "library",
+	"description": "CSOB client library",
+	"keywords": ["nette", "kdyby", "csob", "paymentgateway", "card", "payment"],
+	"homepage": "http://kdyby.org",
+	"license": ["BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
+	"authors": [
+		{
+			"name": "Filip Procházka",
+			"homepage": "http://filip-prochazka.com",
+			"email": "filip@prochazka.su"
+		}
+	],
+	"support": {
+		"email": "filip@prochazka.su",
+		"issues": "https://github.com/Kdyby/CsobPaygateNette/issues"
+	},
+	"require": {
+		"bitbang/http": "^0.1",
+		"psr/log": "^1.0",
+
+		"nette/di": "^2.3",
+		"nette/utils": "^2.3"
+	},
+	"require-dev": {
+		"nette/tester": "^1.6"
+	},
+	"autoload": {
+		"psr-4": {
+			"Kdyby\\CsobPaygateNette\\": "src/"
+		},
+		"classmap": [
+			"src/exceptions.php"
+		]
+	}
+}
