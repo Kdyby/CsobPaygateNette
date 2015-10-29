@@ -19,7 +19,9 @@
 	"require": {
 		"kdyby/csob-payment-gateway": "@dev",
 
+		"nette/application": "^2.3",
 		"nette/di": "^2.3",
+		"nette/http": "^2.3",
 		"nette/utils": "^2.3"
 	},
 	"require-dev": {

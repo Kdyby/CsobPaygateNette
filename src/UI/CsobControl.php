@@ -1,0 +1,158 @@
+<?php
+
+/**
+ * This file is part of the Kdyby (http://www.kdyby.org)
+ *
+ * Copyright (c) 2008 Filip Procházka (filip@prochazka.su)
+ *
+ * For the full copyright and license information, please view the file license.txt that was distributed with this source code.
+ */
+
+namespace Kdyby\CsobPaygateNette\UI;
+
+use Kdyby;
+use Kdyby\CsobPaygateNette\InvalidStateException;
+use Kdyby\CsobPaymentGateway as Csob;
+use Nette;
+use Nette\Application\Responses\RedirectResponse;
+use Nette\Http\IRequest;
+
+
+
+/**
+ * @author Filip Procházka <filip@prochazka.su>
+ *
+ * @method onInit(CsobControl $control, Csob\Payment $request)
+ * @method onCreated(CsobControl $control, Csob\Message\Response $response, Csob\Message\RedirectResponse $redirectUrl)
+ * @method onResponse(CsobControl $control, Csob\Message\Response $response)
+ * @method onError(CsobControl $control, \Exception $e, Csob\Message\Response $response = NULL)
+ */
+class CsobControl extends Nette\Application\UI\Control
+{
+
+	/**
+	 * Event on pay creating.
+	 *
+	 * @var array|callable[]|\Closure[]
+	 */
+	public $onInit = [];
+
+	/**
+	 * Event on pay creating.
+	 *
+	 * @var array|callable[]|\Closure[]
+	 */
+	public $onCreated = [];
+
+	/**
+	 * Event on success response from gateway.
+	 *
+	 * @var array|callable[]|\Closure[]
+	 */
+	public $onResponse = [];
+
+	/**
+	 * Event on error response from gateway. It shows flashMessage by default.
+	 *
+	 * @var array|callable[]|\Closure[]
+	 */
+	public $onError = [];
+
+	/**
+	 * @var Csob\Client
+	 */
+	private $client;
+
+	/**
+	 * @var IRequest
+	 */
+	private $httpRequest;
+
+
+
+	public function __construct(Csob\Client $client, IRequest $httpRequest)
+	{
+		parent::__construct();
+		$this->client = $client;
+		$this->httpRequest = $httpRequest;
+	}
+
+
+
+	/**
+	 * Creates/sends request to gateway.
+	 */
+	public function pay()
+	{
+		$this->check();
+
+		$payment = $this->client->createPayment();
+		$payment->setReturnUrl($this->link('//response!'));
+		$this->onInit($this, $payment);
+
+		if ($payment->getOriginalPayId()) {
+			$response = NULL;
+			try {
+				$response = $this->client->paymentRecurrent($payment);
+
+			} catch (Csob\Exception $e) {
+				$this->onError($this, $e, $response);
+				return;
+			}
+
+			$this->onResponse($this, $response);
+
+		} else {
+			$result = $this->client->paymentInit($payment);
+			$redirect = $this->client->paymentProcess($result->getPayId());
+			$this->onCreated($this, $result, $redirect);
+
+			$this->getPresenter()->sendResponse(new RedirectResponse($redirect->getUrl()));
+		}
+	}
+
+
+
+	/**
+	 * Signal for receive a response from gateway.
+	 */
+	public function handleResponse()
+	{
+		$data = $this->httpRequest->isMethod(IRequest::POST)
+			? $this->httpRequest->getPost()
+			: $this->httpRequest->getQuery();
+
+		$response = NULL;
+		try {
+			$response = $this->client->receiveResponse($data);
+
+		} catch (Csob\Exception $e) {
+			$this->onError($this, $e, $response);
+			return;
+		}
+
+		$this->onResponse($this, $response);
+	}
+
+
+
+	/**
+	 * Checks all important attributes of control. If some is missing throws an exception.
+	 */
+	protected function check()
+	{
+		if (!$this->getPresenter(FALSE)) {
+			throw new InvalidStateException("WebPay control '$this->name' is not attached to 'Presenter'.");
+		}
+		if (!count($this->onInit)) {
+			throw new InvalidStateException("You must specify at least one 'onInit' event.");
+		}
+		if (!count($this->onResponse)) {
+			throw new InvalidStateException("You must specify at least one 'onResponse' event.");
+		}
+		if (!count($this->onError)) {
+			throw new InvalidStateException("You must specify at least one 'onError' event.");
+		}
+	}
+
+}

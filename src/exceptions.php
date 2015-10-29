@@ -28,3 +28,9 @@ class InvalidConfigException extends InvalidArgumentException
 {
 
 }
+
+
+class InvalidStateException extends \RuntimeException implements Exception
+{
+
+}
