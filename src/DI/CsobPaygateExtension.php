@@ -8,7 +8,7 @@
  * For the full copyright and license information, please view the file license.txt that was distributed with this source code.
  */
 
-namespace Kdyby\CsobPaygate\DI;
+namespace Kdyby\CsobPaygateNette\DI;
 
 use Kdyby;
 use Kdyby\CsobPaygateNette\InvalidConfigException;
@@ -17,6 +17,7 @@ use Kdyby\CsobPaymentGateway\Message\Request;
 use Nette;
 use Nette\DI\Statement;
 use Nette\PhpGenerator as Code;
+use Nette\Utils\Validators;
 
 
 
@@ -73,13 +74,19 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 		}
 
 		if (empty($config['privateKey']['path']) || !file_exists($config['privateKey']['path'])) {
-			throw new InvalidConfigException('');
+			throw new InvalidConfigException('Private key for not provided.');
 		}
+
+		Validators::assertField($config, 'merchantId', 'string:');
 
 		$builder->addDefinition($this->prefix('config'))
 			->setClass('Kdyby\CsobPaymentGateway\Configuration', [
-
-			]);
+				$config['merchantId'],
+				$config['shopName'],
+			])
+			->addSetup('setUrl', [$config['url']])
+			->addSetup('setReturnUrl', [$config['returnUrl']])
+			->addSetup('setReturnMethod', [$config['returnMethod']]);
 
 		$builder->addDefinition($this->prefix('client'))
 			->setClass('Kdyby\CsobPaymentGateway\Client', [
@@ -87,6 +94,12 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 				new Statement('Kdyby\CsobPaymentGateway\Certificate\PrivateKey', [$config['privateKey']['path'], $config['privateKey']['password']]),
 				new Statement('Kdyby\CsobPaymentGateway\Certificate\PublicKey', [$config['publicKey']]),
 				new Statement('Bitbang\Http\Clients\CurlClient')
+			]);
+
+		$builder->addDefinition($this->prefix('control'))
+			->setImplement('Kdyby\CsobPaygateNette\UI\ICsobControlFactory')
+			->setArguments([
+				$this->prefix('@client')
 			]);
 	}
 
