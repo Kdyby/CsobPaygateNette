@@ -27,9 +27,6 @@ use Nette\Utils\Validators;
 class CsobPaygateExtension extends Nette\DI\CompilerExtension
 {
 
-	const PRODUCTION = 'production';
-	const SANDBOX = 'sandbox';
-
 	/**
 	 * @var array
 	 */
