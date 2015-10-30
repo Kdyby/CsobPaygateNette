@@ -23,7 +23,8 @@ use Nette\Http\IRequest;
  * @author Filip Procházka <filip@prochazka.su>
  *
  * @method onInit(CsobControl $control, Csob\Payment $request)
- * @method onCreated(CsobControl $control, Csob\Message\Response $response, Csob\Message\RedirectResponse $redirectUrl)
+ * @method onCreated(CsobControl $control, Csob\Message\Response $response)
+ * @method onProcess(CsobControl $control, Csob\Message\RedirectResponse $redirectUrl)
  * @method onResponse(CsobControl $control, Csob\Message\Response $response)
  * @method onError(CsobControl $control, \Exception $e, Csob\Message\Response $response = NULL)
  */
@@ -43,6 +44,13 @@ class CsobControl extends Nette\Application\UI\Control
 	 * @var array|callable[]|\Closure[]
 	 */
 	public $onCreated = [];
+
+	/**
+	 * Event on pay creating.
+	 *
+	 * @var array|callable[]|\Closure[]
+	 */
+	public $onProcess = [];
 
 	/**
 	 * Event on success response from gateway.
@@ -104,8 +112,10 @@ class CsobControl extends Nette\Application\UI\Control
 
 		} else {
 			$result = $this->client->paymentInit($payment);
+			$this->onCreated($this, $result);
+
 			$redirect = $this->client->paymentProcess($result->getPayId());
-			$this->onCreated($this, $result, $redirect);
+			$this->onProcess($this, $redirect);
 
 			$this->getPresenter()->sendResponse(new RedirectResponse($redirect->getUrl()));
 		}
