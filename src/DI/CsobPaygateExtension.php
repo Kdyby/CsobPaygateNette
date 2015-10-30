@@ -33,16 +33,34 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 	public $defaults = [
 		'merchantId' => NULL,
 		'shopName' => 'E-shop',
-		'sandbox' => TRUE,
-		'url' => NULL,
-		'privateKey' => [
-			'path' => NULL,
-			'password' => NULL,
+		'productionMode' => FALSE,
+		'sandbox' => [
+			'url' => Configuration::DEFAULT_SANDBOX_URL,
+			'privateKey' => [
+				'path' => NULL,
+				'password' => NULL,
+			],
+			'publicKey' => NULL,
 		],
-		'publicKey' => NULL,
+		'production' => [
+			'url' => Configuration::DEFAULT_PRODUCTION_URL,
+			'privateKey' => [
+				'path' => NULL,
+				'password' => NULL,
+			],
+			'publicKey' => NULL,
+		],
 		'returnMethod' => Request::POST,
 		'returnUrl' => NULL,
 	];
+
+
+
+	public function __construct()
+	{
+		$this->defaults['sandbox']['publicKey'] = Configuration::getCsobSandboxCertPath();
+		$this->defaults['production']['publicKey'] = Configuration::getCsobProductionCertPath();
+	}
 
 
 
@@ -51,45 +69,38 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 		$builder = $this->getContainerBuilder();
 		$config = $this->getConfig($this->defaults);
 
-		if (empty($config['publicKey'])) {
-			$config['publicKey'] = $config['sandbox']
-				? Configuration::getCsobSandboxCertPath()
-				: Configuration::getCsobProductionCertPath();
-		}
+		Validators::assertField($config, 'merchantId', 'string');
+		Validators::assertField($config, 'shopName', 'string');
+		Validators::assertField($config, 'productionMode', 'bool');
+		Validators::assertField($config, 'returnMethod', 'string|pattern:(GET|POST)');
 
-		if (empty($config['url'])) {
-			$config['url'] = $config['sandbox']
-				? Configuration::DEFAULT_SANDBOX_URL
-				: Configuration::DEFAULT_PRODUCTION_URL;
-		}
+		$envConfig = $config['productionMode'] ? $config['production'] : $config['sandbox'];
 
-		if (is_string($config['privateKey'])) {
-			$config['privateKey'] = [
-				'path' => $config['privateKey'],
+		if (is_string($envConfig['privateKey'])) {
+			$envConfig['privateKey'] = [
+				'path' => $envConfig['privateKey'],
 				'password' => NULL
 			];
 		}
 
-		if (empty($config['privateKey']['path']) || !file_exists($config['privateKey']['path'])) {
+		if (empty($envConfig['privateKey']['path']) || !file_exists($envConfig['privateKey']['path'])) {
 			throw new InvalidConfigException('Private key for not provided.');
 		}
-
-		Validators::assertField($config, 'merchantId', 'string:');
 
 		$builder->addDefinition($this->prefix('config'))
 			->setClass('Kdyby\CsobPaymentGateway\Configuration', [
 				$config['merchantId'],
 				$config['shopName'],
 			])
-			->addSetup('setUrl', [$config['url']])
+			->addSetup('setUrl', [$envConfig['url']])
 			->addSetup('setReturnUrl', [$config['returnUrl']])
 			->addSetup('setReturnMethod', [$config['returnMethod']]);
 
 		$builder->addDefinition($this->prefix('client'))
 			->setClass('Kdyby\CsobPaymentGateway\Client', [
 				$this->prefix('@config'),
-				new Statement('Kdyby\CsobPaymentGateway\Certificate\PrivateKey', [$config['privateKey']['path'], $config['privateKey']['password']]),
-				new Statement('Kdyby\CsobPaymentGateway\Certificate\PublicKey', [$config['publicKey']]),
+				new Statement('Kdyby\CsobPaymentGateway\Certificate\PrivateKey', [$envConfig['privateKey']['path'], $envConfig['privateKey']['password']]),
+				new Statement('Kdyby\CsobPaymentGateway\Certificate\PublicKey', [$envConfig['publicKey']]),
 				new Statement('Bitbang\Http\Clients\CurlClient')
 			]);
 
