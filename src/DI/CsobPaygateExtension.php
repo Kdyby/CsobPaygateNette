@@ -104,8 +104,10 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 		$builder->addDefinition($this->prefix('client'))
 			->setClass('Kdyby\CsobPaymentGateway\Client', [
 				$this->prefix('@config'),
-				new Statement('Kdyby\CsobPaymentGateway\Certificate\PrivateKey', [$envConfig['privateKey']['path'], $envConfig['privateKey']['password']]),
-				new Statement('Kdyby\CsobPaymentGateway\Certificate\PublicKey', [$envConfig['publicKey']]),
+				new Statement('Kdyby\CsobPaymentGateway\Message\Signature', [
+					new Statement('Kdyby\CsobPaymentGateway\Certificate\PrivateKey', [$envConfig['privateKey']['path'], $envConfig['privateKey']['password']]),
+					new Statement('Kdyby\CsobPaymentGateway\Certificate\PublicKey', [$envConfig['publicKey']]),
+				]),
 				$this->prefix('@httpClient')
 			]);
 
