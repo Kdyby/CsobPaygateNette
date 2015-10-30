@@ -96,12 +96,17 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 			->addSetup('setReturnUrl', [$config['returnUrl']])
 			->addSetup('setReturnMethod', [$config['returnMethod']]);
 
+		$builder->addDefinition($this->prefix('httpClient'))
+			->setClass('Kdyby\CsobPaymentGateway\IHttpClient')
+			->setFactory('Kdyby\CsobPaymentGateway\Http\GuzzleClient')
+			->setAutowired(FALSE);
+
 		$builder->addDefinition($this->prefix('client'))
 			->setClass('Kdyby\CsobPaymentGateway\Client', [
 				$this->prefix('@config'),
 				new Statement('Kdyby\CsobPaymentGateway\Certificate\PrivateKey', [$envConfig['privateKey']['path'], $envConfig['privateKey']['password']]),
 				new Statement('Kdyby\CsobPaymentGateway\Certificate\PublicKey', [$envConfig['publicKey']]),
-				new Statement('Bitbang\Http\Clients\CurlClient')
+				$this->prefix('@httpClient')
 			]);
 
 		$builder->addDefinition($this->prefix('control'))
