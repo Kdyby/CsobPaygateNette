@@ -128,4 +128,3 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 	}
 
 }
-
