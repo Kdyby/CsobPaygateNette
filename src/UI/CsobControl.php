@@ -104,6 +104,10 @@ class CsobControl extends Nette\Application\UI\Control
 				$response = $this->client->paymentRecurrent($payment);
 
 			} catch (Csob\Exception $e) {
+				if ($response === NULL && $e instanceof Csob\ExceptionWithResponse) {
+					$response = $e->getResponse();
+				}
+
 				$this->onError($this, $e, $response);
 				return;
 			}
@@ -137,6 +141,10 @@ class CsobControl extends Nette\Application\UI\Control
 			$response = $this->client->receiveResponse($data);
 
 		} catch (Csob\Exception $e) {
+			if ($response === NULL && $e instanceof Csob\ExceptionWithResponse) {
+				$response = $e->getResponse();
+			}
+
 			$this->onError($this, $e, $response);
 			return;
 		}
