@@ -52,6 +52,7 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 		],
 		'returnMethod' => Request::POST,
 		'returnUrl' => NULL,
+		'logging' => FALSE,
 	];
 
 
@@ -101,7 +102,7 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 			->setFactory('Kdyby\CsobPaymentGateway\Http\GuzzleClient')
 			->setAutowired(FALSE);
 
-		$builder->addDefinition($this->prefix('client'))
+		$client = $builder->addDefinition($this->prefix('client'))
 			->setClass('Kdyby\CsobPaymentGateway\Client', [
 				$this->prefix('@config'),
 				new Statement('Kdyby\CsobPaymentGateway\Message\Signature', [
@@ -110,6 +111,15 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 				]),
 				$this->prefix('@httpClient')
 			]);
+
+		if ($config['logging']) {
+			if (!is_bool($config['logging']) && class_exists('Kdyby\Monolog\Logger')) {
+				$client->addSetup('setLogger', [new Statement('@Kdyby\Monolog\Logger::channel', [$config['logging']])]);
+
+			} else {
+				$client->addSetup('setLogger'); // autowire
+			}
+		}
 
 		$builder->addDefinition($this->prefix('control'))
 			->setImplement('Kdyby\CsobPaygateNette\UI\ICsobControlFactory')
