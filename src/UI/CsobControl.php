@@ -112,6 +112,7 @@ class CsobControl extends Nette\Application\UI\Control
 				return;
 			}
 
+			$this->onCreated($this, $response);
 			$this->onResponse($this, $response);
 
 		} else {
