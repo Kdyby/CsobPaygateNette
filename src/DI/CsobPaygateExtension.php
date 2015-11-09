@@ -102,13 +102,17 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 			->setFactory('Kdyby\CsobPaymentGateway\Http\GuzzleClient')
 			->setAutowired(FALSE);
 
+		$builder->addDefinition($this->prefix('signature'))
+			->setClass('Kdyby\CsobPaymentGateway\Message\Signature', [
+				new Statement('Kdyby\CsobPaymentGateway\Certificate\PrivateKey', [$envConfig['privateKey']['path'], $envConfig['privateKey']['password']]),
+				new Statement('Kdyby\CsobPaymentGateway\Certificate\PublicKey', [$envConfig['publicKey']]),
+			])
+			->setAutowired(FALSE);
+
 		$client = $builder->addDefinition($this->prefix('client'))
 			->setClass('Kdyby\CsobPaymentGateway\Client', [
 				$this->prefix('@config'),
-				new Statement('Kdyby\CsobPaymentGateway\Message\Signature', [
-					new Statement('Kdyby\CsobPaymentGateway\Certificate\PrivateKey', [$envConfig['privateKey']['path'], $envConfig['privateKey']['password']]),
-					new Statement('Kdyby\CsobPaymentGateway\Certificate\PublicKey', [$envConfig['publicKey']]),
-				]),
+				$this->prefix('@signature'),
 				$this->prefix('@httpClient')
 			]);
 
