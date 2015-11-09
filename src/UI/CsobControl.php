@@ -108,6 +108,10 @@ class CsobControl extends Nette\Application\UI\Control
 					$response = $e->getResponse();
 				}
 
+				if ($response !== NULL && $response->getPayId()) {
+					$this->onCreated($this, $response);
+				}
+
 				$this->onError($this, $e, $response);
 				return;
 			}
