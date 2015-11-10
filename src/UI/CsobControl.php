@@ -125,8 +125,6 @@ class CsobControl extends Nette\Application\UI\Control
 
 			$redirect = $this->client->paymentProcess($result->getPayId());
 			$this->onProcess($this, $redirect);
-
-			$this->getPresenter()->sendResponse(new RedirectResponse($redirect->getUrl()));
 		}
 	}
 
