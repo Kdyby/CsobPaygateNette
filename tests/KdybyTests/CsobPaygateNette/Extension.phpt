@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Test: Kdyby\Clock\Extension.
+ * Test: Kdyby\CsobPaygateNette\Extension.
  *
- * @testCase Kdyby\Clock\ExtensionTest
+ * @testCase Kdyby\CsobPaygateNette\ExtensionTest
  * @author Filip Procházka <filip@prochazka.su>
- * @package Kdyby\Clock
+ * @package Kdyby\CsobPaygateNette
  */
 
-namespace KdybyTests\Clock;
+namespace KdybyTests\CsobPaygateNette;
 
 use Kdyby;
 use Nette;
