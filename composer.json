@@ -48,7 +48,8 @@
 		"tracy/tracy": "~2.3@dev",
 
 		"guzzlehttp/guzzle": "^6.0",
-		"nette/tester": "^1.6"
+		"nette/tester": "^1.6",
+		"mockery/mockery": "^0.9"
 	},
 	"autoload": {
 		"psr-4": {
@@ -57,5 +58,10 @@
 		"classmap": [
 			"src/exceptions.php"
 		]
+	},
+	"autoload-dev": {
+		"psr-0": {
+			"KdybyTests\\CsobPaygateNette\\": "tests/"
+		}
 	}
 }

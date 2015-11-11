@@ -5,7 +5,13 @@ common:
 	php:
 		date.timezone: Europe/Prague
 
+	application:
+		mapping:
+			*: KdybyTests\CsobPaygateNette\*Presenter
+
 	services:
+		router: Nette\Application\Routers\SimpleRouter
+
 		cacheStorage:
 			class: Nette\Caching\Storages\MemoryStorage
 
