@@ -5,10 +5,6 @@ common:
 	php:
 		date.timezone: Europe/Prague
 
-	application:
-		mapping:
-			*: KdybyTests\CsobPaygateNette\*Presenter
-
 	services:
 		router: Nette\Application\Routers\SimpleRouter
 
@@ -23,9 +19,17 @@ v22 < common:
 		session:
 			autoStart: false
 
+		application:
+			mapping:
+				*: KdybyTests\CsobPaygateNette\*Presenter
+
 v23 < common:
 	http:
 		frames: null
 
 	session:
 		autoStart: false
+
+	application:
+		mapping:
+			*: KdybyTests\CsobPaygateNette\*Presenter

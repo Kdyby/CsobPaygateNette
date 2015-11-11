@@ -109,10 +109,16 @@ class CsobTestCase extends Tester\TestCase
 		$signatureMock = \Mockery::mock(Kdyby\CsobPaymentGateway\Message\Signature::class, [$privateKey, $publicKey])->shouldDeferMissing();
 		$signatureMock->shouldReceive('verifyResponse')->andReturn($verified);
 
+		$this->replaceService('csobPaygate.signature', $signatureMock);
+	}
+
+
+
+	protected function replaceService($name, $service)
+	{
 		$sl = $this->getContainer('default');
-		$serviceName = $sl->findByType(Kdyby\CsobPaymentGateway\Message\Signature::class)[0];
-		$sl->removeService($serviceName);
-		$sl->addService($serviceName, $signatureMock);
+		$sl->removeService($name);
+		$sl->addService($name, $service);
 	}
 
 }

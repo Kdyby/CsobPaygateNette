@@ -47,10 +47,7 @@ class CsobControlRecurrentPaymentTest extends CsobTestCase
 			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/payment/recurrent', \Mockery::type('array'), \Mockery::type('string'))
 			->andReturn($apiResponse);
 
-		$sl = $this->getContainer('default');
-		$serviceName = $sl->findByType(Kdyby\CsobPaymentGateway\IHttpClient::class)[0];
-		$sl->removeService($serviceName);
-		$sl->addService($serviceName, $httpClientMock);
+		$this->replaceService('csobPaygate.httpClient', $httpClientMock);
 
 		$this->usePresenter('Test');
 		$this->presenter['csob'];
