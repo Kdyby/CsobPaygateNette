@@ -60,8 +60,6 @@
 		]
 	},
 	"autoload-dev": {
-		"psr-0": {
-			"KdybyTests\\CsobPaygateNette\\": "tests/"
-		}
+		"classmap": ["tests/KdybyTests"]
 	}
 }
