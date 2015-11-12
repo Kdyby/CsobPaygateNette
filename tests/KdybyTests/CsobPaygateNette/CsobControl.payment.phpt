@@ -29,6 +29,7 @@ class CsobControlPaymentTest extends CsobTestCase
 
 	protected function setUp()
 	{
+		parent::setUp();
 		$this->usePresenter('Test');
 		$this->presenter['csob'];
 	}

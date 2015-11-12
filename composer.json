@@ -49,7 +49,8 @@
 
 		"guzzlehttp/guzzle": "^6.0",
 		"nette/tester": "^1.6",
-		"mockery/mockery": "^0.9"
+		"mockery/mockery": "^0.9",
+		"kdyby/request-stack": "^0.1.0"
 	},
 	"autoload": {
 		"psr-4": {

@@ -28,6 +28,7 @@ class CsobControlHandleResponseTest extends CsobTestCase
 
 	protected function setUp()
 	{
+		parent::setUp();
 		$this->mockSignature();
 
 		$this->usePresenter('Test');

@@ -13,9 +13,9 @@ class CsobTestCase extends Tester\TestCase
 {
 
 	/**
-	 * @var \SystemContainer[]|Nette\DI\Container[]
+	 * @var Nette\DI\Container
 	 */
-	private $containers;
+	private $container;
 
 	/**
 	 * @var Nette\Application\UI\Presenter
@@ -24,39 +24,38 @@ class CsobTestCase extends Tester\TestCase
 
 
 
-	protected function getContainer($configFile)
+	protected function getContainer()
 	{
-		if (!isset($this->containers[$configFile])) {
-			return $this->createContainer($configFile);
+		if ($this->container === NULL) {
+			return $this->container = $this->createContainer();
 		}
 
-		return $this->containers[$configFile];
+		return $this->container;
 	}
 
 
 
 	/**
-	 * @param string $configFile
-	 * @return \SystemContainer|Nette\DI\Container
+	 * @return Nette\DI\Container
 	 */
-	protected function createContainer($configFile)
+	protected function createContainer()
 	{
 		$config = new Nette\Configurator();
 		$config->setTempDirectory(TEMP_DIR);
-		$config->addParameters(array('container' => array('class' => 'SystemContainer_' . md5($configFile))));
 		$config->addParameters(array('appDir' => __DIR__, 'testsDir' => __DIR__ . '/../..'));
 		$config->addConfig(__DIR__ . '/../nette-reset.neon', !isset($config->defaultExtensions['nette']) ? 'v23' : 'v22');
-		$config->addConfig(__DIR__ . '/config/' . $configFile . '.neon');
+		$config->addConfig(__DIR__ . '/config/default.neon');
+		Kdyby\RequestStack\DI\RequestStackExtension::register($config);
 		Kdyby\CsobPaygateNette\DI\CsobPaygateExtension::register($config);
 
-		return $this->containers[$configFile] = $config->createContainer();
+		return $config->createContainer();
 	}
 
 
 
 	protected function usePresenter($name)
 	{
-		$sl = $this->getContainer('default');
+		$sl = $this->getContainer();
 
 		$presenterFactory = $sl->getByType(Nette\Application\IPresenterFactory::class);
 		$presenter = $presenterFactory->createPresenter($name);
@@ -78,8 +77,6 @@ class CsobTestCase extends Tester\TestCase
 
 	protected function runPresenterAction($action, $method = 'GET', $params = [], $post = [])
 	{
-		$sl = $this->getContainer('default');
-
 		if (is_array($method)) {
 			$post = $params;
 			$params = $method;
@@ -88,16 +85,8 @@ class CsobTestCase extends Tester\TestCase
 
 		$url = (new Nette\Http\UrlScript('https://kdyby.org'))->setQuery($params);
 		$httpRequest = new Nette\Http\Request($url, NULL, $post, NULL, NULL, NULL, $method);
-
-		// force httpRequest to the presenter
-		$refl = new \ReflectionProperty(Nette\Application\UI\Presenter::class, 'httpRequest');
-		$refl->setAccessible(TRUE);
-		$refl->setValue($this->presenter, $httpRequest);
-
-		// force httpRequest to the CsobControl
-		$refl = new \ReflectionProperty(Kdyby\CsobPaygateNette\UI\CsobControl::class, 'httpRequest');
-		$refl->setAccessible(TRUE);
-		$refl->setValue($this->presenter['csob'], $httpRequest);
+		$this->getContainer()->getByType(Kdyby\RequestStack\RequestStack::class)
+			->pushRequest($httpRequest);
 
 		$request = new Nette\Application\Request($this->presenter->getName(), $method, ['action' => $action] + $params, $post);
 		$response = $this->presenter->run($request);
@@ -121,7 +110,7 @@ class CsobTestCase extends Tester\TestCase
 
 	protected function replaceService($name, $service)
 	{
-		$sl = $this->getContainer('default');
+		$sl = $this->getContainer();
 		$sl->removeService($name);
 		$sl->addService($name, $service);
 	}

@@ -26,7 +26,7 @@ class ExtensionTest extends CsobTestCase
 
 	public function testFunctional()
 	{
-		$container = $this->getContainer('default');
+		$container = $this->getContainer();
 		Assert::truthy($container->getByType('Kdyby\CsobPaymentGateway\Client'));
 		Assert::truthy($container->getByType('Kdyby\CsobPaygateNette\UI\ICsobControlFactory'));
 		Assert::type('Kdyby\CsobPaygateNette\UI\CsobControl', $container->getByType('Kdyby\CsobPaygateNette\UI\ICsobControlFactory')->create());

@@ -30,6 +30,7 @@ class CsobControlRecurrentPaymentTest extends CsobTestCase
 
 	protected function setUp()
 	{
+		parent::setUp();
 		$this->mockSignature();
 
 		$apiResponse = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
