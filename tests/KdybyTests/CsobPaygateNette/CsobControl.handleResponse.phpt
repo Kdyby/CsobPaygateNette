@@ -10,13 +10,11 @@ namespace KdybyTests\CsobPaygateNette;
 
 use Kdyby;
 use Kdyby\CsobPaygateNette\UI\CsobControl;
-use Kdyby\CsobPaymentGateway\Message\RedirectResponse;
 use Kdyby\CsobPaymentGateway\Message\Response;
 use Kdyby\CsobPaymentGateway\Payment;
 use Nette;
 use Tester;
 use Tester\Assert;
-use Tracy\Debugger;
 
 require_once __DIR__ . '/../bootstrap.php';
 
@@ -53,7 +51,7 @@ class CsobControlHandleResponseTest extends CsobTestCase
 			Assert::same(0, $response->getResultCode());
 			Assert::same('OK', $response->getResultMessage());
 			Assert::same(Payment::STATUS_TO_CLEARING, $response->getPaymentStatus());
-			Assert::same(637413, $response->getAuthCode());
+			Assert::same('637413', $response->getAuthCode());
 
 			$control->getPresenter()->terminate();
 		};
@@ -70,7 +68,7 @@ class CsobControlHandleResponseTest extends CsobTestCase
 			'resultMessage' => 'OK',
 			'paymentStatus' => Payment::STATUS_TO_CLEARING,
 			'signature' => 'signature',
-			'authCode' => 637413,
+			'authCode' => '637413',
 		]);
 	}
 
@@ -91,7 +89,7 @@ class CsobControlHandleResponseTest extends CsobTestCase
 			Assert::same(0, $response->getResultCode());
 			Assert::same('OK', $response->getResultMessage());
 			Assert::same(Payment::STATUS_TO_CLEARING, $response->getPaymentStatus());
-			Assert::same(637413, $response->getAuthCode());
+			Assert::same('637413', $response->getAuthCode());
 
 			$control->getPresenter()->terminate();
 		};
@@ -107,7 +105,7 @@ class CsobControlHandleResponseTest extends CsobTestCase
 			'resultMessage' => 'OK',
 			'paymentStatus' => Payment::STATUS_TO_CLEARING,
 			'signature' => 'signature',
-			'authCode' => 637413,
+			'authCode' => '637413',
 		]);
 	}
 
