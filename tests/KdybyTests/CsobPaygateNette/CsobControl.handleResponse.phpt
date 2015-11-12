@@ -38,7 +38,7 @@ class CsobControlHandleResponseTest extends CsobTestCase
 
 
 
-	public function testHandleResponse()
+	public function testHandleGetResponse()
 	{
 		$this->presenter['csob']->onInit[] = function (CsobControl $control, Payment $payment) {
 			Assert::fail('The init handler should not be triggered.');
@@ -64,6 +64,43 @@ class CsobControlHandleResponseTest extends CsobTestCase
 
 		$this->runPresenterAction('pay', [
 			'do' => 'csob-response',
+			'payId' => 'fb425174783f9AK',
+			'dttm' => '20151109153917',
+			'resultCode' => 0,
+			'resultMessage' => 'OK',
+			'paymentStatus' => Payment::STATUS_TO_CLEARING,
+			'signature' => 'signature',
+			'authCode' => 637413,
+		]);
+	}
+
+
+
+	public function testHandlePostResponse()
+	{
+		$this->presenter['csob']->onInit[] = function (CsobControl $control, Payment $payment) {
+			Assert::fail('The init handler should not be triggered.');
+		};
+
+		$this->presenter['csob']->onCreated[] = function (CsobControl $control, Response $response) {
+			Assert::fail('The created handler should not be triggered.');
+		};
+
+		$this->presenter['csob']->onResponse[] = function (CsobControl $control, Response $response) {
+			Assert::same('fb425174783f9AK', $response->getPayId());
+			Assert::same(0, $response->getResultCode());
+			Assert::same('OK', $response->getResultMessage());
+			Assert::same(Payment::STATUS_TO_CLEARING, $response->getPaymentStatus());
+			Assert::same(637413, $response->getAuthCode());
+
+			$control->getPresenter()->terminate();
+		};
+
+		$this->presenter['csob']->onError[] = function (CsobControl $control, Kdyby\CsobPaymentGateway\Exception $exception, Response $response = NULL) {
+			Assert::fail('The error handler should not be triggered.');
+		};
+
+		$this->runPresenterAction('pay', 'POST', ['do' => 'csob-response'], [
 			'payId' => 'fb425174783f9AK',
 			'dttm' => '20151109153917',
 			'resultCode' => 0,

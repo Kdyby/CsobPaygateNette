@@ -90,6 +90,11 @@ class CsobTestCase extends Tester\TestCase
 		$httpRequest = new Nette\Http\Request($url, NULL, $post, NULL, NULL, NULL, $method);
 
 		// force httpRequest to the presenter
+		$refl = new \ReflectionProperty(Nette\Application\UI\Presenter::class, 'httpRequest');
+		$refl->setAccessible(TRUE);
+		$refl->setValue($this->presenter, $httpRequest);
+
+		// force httpRequest to the CsobControl
 		$refl = new \ReflectionProperty(Kdyby\CsobPaygateNette\UI\CsobControl::class, 'httpRequest');
 		$refl->setAccessible(TRUE);
 		$refl->setValue($this->presenter['csob'], $httpRequest);
