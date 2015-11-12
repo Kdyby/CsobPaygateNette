@@ -163,7 +163,7 @@ class CsobControl extends Nette\Application\UI\Control
 	protected function check()
 	{
 		if (!$this->getPresenter(FALSE)) {
-			throw new InvalidStateException("WebPay control '$this->name' is not attached to 'Presenter'.");
+			throw new InvalidStateException(sprintf("%s is not attached to Presenter.", get_called_class()));
 		}
 		if (!count($this->onInit)) {
 			throw new InvalidStateException("You must specify at least one 'onInit' event.");
