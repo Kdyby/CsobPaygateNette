@@ -36,9 +36,12 @@ class CsobControlCheckTest extends CsobTestCase
 
 	public function testNotAttached()
 	{
-		Assert::throws(function () {
-			$this->getContainer('default')->getByType(Kdyby\CsobPaygateNette\UI\ICsobControlFactory::class)->create()->pay();
-		}, Kdyby\CsobPaygateNette\InvalidStateException::class, "WebPay control '' is not attached to 'Presenter'.");
+		$factory = $this->getContainer()->getByType(Kdyby\CsobPaygateNette\UI\ICsobControlFactory::class);
+		$control = $factory->create();
+
+		Assert::throws(function () use ($control) {
+			$control->pay();
+		}, Kdyby\CsobPaygateNette\InvalidStateException::class, "Kdyby\CsobPaygateNette\UI\CsobControl is not attached to Presenter.");
 	}
 
 
