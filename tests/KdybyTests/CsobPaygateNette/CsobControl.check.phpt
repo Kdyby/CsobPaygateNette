@@ -26,6 +26,8 @@ class CsobControlCheckTest extends CsobTestCase
 	protected function setUp()
 	{
 		parent::setUp();
+		$this->prepareContainer('default');
+
 		$this->usePresenter('Test');
 		$this->presenter['csob'];
 	}

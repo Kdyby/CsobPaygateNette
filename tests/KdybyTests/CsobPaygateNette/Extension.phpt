@@ -24,6 +24,14 @@ require_once __DIR__ . '/../bootstrap.php';
 class ExtensionTest extends CsobTestCase
 {
 
+	protected function setUp()
+	{
+		parent::setUp();
+		$this->prepareContainer('default');
+	}
+
+
+
 	public function testFunctional()
 	{
 		$container = $this->getContainer();
