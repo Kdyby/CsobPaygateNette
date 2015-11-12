@@ -41,7 +41,7 @@ class CsobControlCheckTest extends CsobTestCase
 
 		Assert::throws(function () use ($control) {
 			$control->pay();
-		}, Kdyby\CsobPaygateNette\InvalidStateException::class, "Kdyby\CsobPaygateNette\UI\CsobControl is not attached to Presenter.");
+		}, Kdyby\CsobPaygateNette\InvalidStateException::class, 'Kdyby\CsobPaygateNette\UI\CsobControl is not attached to Presenter.');
 	}
 
 
