@@ -45,6 +45,8 @@ class CsobControlPaymentTest extends CsobTestCase
 				->setDescription('Test payment')
 				->addCartItem('Test item 1', 42 * 100, 1)
 				->addCartItem('Test item 2', 158 * 100, 2);
+
+			Assert::same($this->presenter->link('//csob-response!'), $payment->toArray()['returnUrl']);
 		};
 
 		$this->presenter['csob']->onCreated[] = function (CsobControl $control, Response $response) {
