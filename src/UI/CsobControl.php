@@ -120,10 +120,26 @@ class CsobControl extends Nette\Application\UI\Control
 			$this->onResponse($this, $response);
 
 		} else {
-			$result = $this->client->paymentInit($payment);
-			$this->onCreated($this, $result);
+			$response = NULL;
+			try {
+				$response = $this->client->paymentInit($payment);
 
-			$redirect = $this->client->paymentProcess($result->getPayId());
+			} catch (Csob\Exception $e) {
+				if ($response === NULL && $e instanceof Csob\ExceptionWithResponse) {
+					$response = $e->getResponse();
+				}
+
+				if ($response !== NULL && $response->getPayId()) {
+					$this->onCreated($this, $response);
+				}
+
+				$this->onError($this, $e, $response);
+				return;
+			}
+
+			$this->onCreated($this, $response);
+
+			$redirect = $this->client->paymentProcess($response->getPayId());
 			$this->onProcess($this, $redirect);
 		}
 	}
