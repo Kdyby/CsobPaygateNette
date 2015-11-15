@@ -40,7 +40,7 @@ class CsobControlRecurrentPaymentTest extends CsobTestCase
 			'dttm' => (new \DateTime())->format('YmdGis'),
 			'resultCode' => 0,
 			'resultMessage' => 'OK',
-			'paymentStatus' => 7,
+			'paymentStatus' => Payment::STATUS_TO_CLEARING,
 			'authCode' => 123456,
 			'signature' => 'signature',
 		]));

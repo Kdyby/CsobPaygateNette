@@ -12,6 +12,7 @@ use Kdyby;
 use Kdyby\CsobPaygateNette\UI\CsobControl;
 use Kdyby\CsobPaymentGateway\Message\Response;
 use Kdyby\CsobPaymentGateway\Payment;
+use Kdyby\CsobPaymentGateway\PaymentCanceledException;
 use Nette;
 use Tester;
 use Tester\Assert;
@@ -109,6 +110,44 @@ class CsobControlHandleResponseTest extends CsobTestCase
 			'paymentStatus' => Payment::STATUS_TO_CLEARING,
 			'signature' => 'signature',
 			'authCode' => '637413',
+		]);
+	}
+
+
+
+	public function testHandleCanceledResponse()
+	{
+		$this->presenter['csob']->onInit[] = function (CsobControl $control, Payment $payment) {
+			Assert::fail('The init handler should not be triggered.');
+		};
+
+		$this->presenter['csob']->onCreated[] = function (CsobControl $control, Response $response) {
+			Assert::fail('The created handler should not be triggered.');
+		};
+
+		$this->presenter['csob']->onResponse[] = function (CsobControl $control, Response $response) {
+			Assert::fail('The response handler should not be triggered.');
+		};
+
+		$this->presenter['csob']->onError[] = function (CsobControl $control, Kdyby\CsobPaymentGateway\Exception $exception, Response $response = NULL) {
+			Assert::type(PaymentCanceledException::class, $exception);
+
+			Assert::notSame(NULL, $response);
+			Assert::same(0, $response->getResultCode());
+			Assert::same("OK", $response->getResultMessage());
+			Assert::same(Payment::STATUS_CANCELED, $response->getPaymentStatus());
+
+			$control->getPresenter()->terminate();
+		};
+
+		$this->runPresenterAction('pay', [
+			'do' => 'csob-response',
+			'payId' => 'fb425174783f9AK',
+			'dttm' => '20151109153917',
+			'resultCode' => 0,
+			'resultMessage' => 'OK',
+			'paymentStatus' => Payment::STATUS_CANCELED,
+			'signature' => 'signature',
 		]);
 	}
 
