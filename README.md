@@ -10,7 +10,7 @@ Kdyby/CsobPaygateNette
 Requirements
 ------------
 
-Kdyby/CsobPaygateNette requires PHP 5.4.
+Kdyby/CsobPaygateNette requires PHP 5.5.
 
 
 Installation
