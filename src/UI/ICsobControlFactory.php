@@ -24,6 +24,6 @@ interface ICsobControlFactory
 	/**
 	 * @return CsobControl
 	 */
-	function create();
+	public function create();
 
 }
