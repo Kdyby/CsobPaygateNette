@@ -14,7 +14,6 @@ use Kdyby;
 use Kdyby\CsobPaygateNette\InvalidStateException;
 use Kdyby\CsobPaymentGateway as Csob;
 use Nette;
-use Nette\Application\Responses\RedirectResponse;
 use Nette\Http\IRequest;
 
 
