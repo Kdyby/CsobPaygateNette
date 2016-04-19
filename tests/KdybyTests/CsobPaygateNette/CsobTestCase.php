@@ -43,7 +43,7 @@ abstract class CsobTestCase extends Tester\TestCase
 	{
 		$config = new Nette\Configurator();
 		$config->setTempDirectory(TEMP_DIR);
-		$config->addParameters(array('appDir' => __DIR__, 'testsDir' => __DIR__ . '/../..'));
+		$config->addParameters(['appDir' => __DIR__, 'testsDir' => __DIR__ . '/../..']);
 		$config->addConfig(__DIR__ . '/../nette-reset.neon', !isset($config->defaultExtensions['nette']) ? 'v23' : 'v22');
 		$config->addConfig(__DIR__ . '/config/' . $configFile . '.neon');
 		Kdyby\CsobPaygateNette\DI\CsobPaygateExtension::register($config);
