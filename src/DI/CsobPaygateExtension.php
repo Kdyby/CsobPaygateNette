@@ -31,6 +31,7 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 	 * @var array
 	 */
 	public $defaults = [
+		'version' => Configuration::VERSION_1_5,
 		'merchantId' => NULL,
 		'shopName' => 'E-shop',
 		'productionMode' => FALSE,
@@ -70,6 +71,7 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 		$builder = $this->getContainerBuilder();
 		$config = $this->getConfig($this->defaults);
 
+		Validators::assertField($config, 'version', 'string');
 		Validators::assertField($config, 'merchantId', 'string');
 		Validators::assertField($config, 'shopName', 'string');
 		Validators::assertField($config, 'productionMode', 'bool');
@@ -93,6 +95,7 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 				$config['merchantId'],
 				$config['shopName'],
 			])
+			->addSetup('setVersion', [$config['version']])
 			->addSetup('setUrl', [$envConfig['url']])
 			->addSetup('setReturnUrl', [$config['returnUrl']])
 			->addSetup('setReturnMethod', [$config['returnMethod']]);

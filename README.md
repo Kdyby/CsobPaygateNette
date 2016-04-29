@@ -28,6 +28,7 @@ Documentation
 
 - [CSOB payment gateway wiki](https://github.com/csob/paymentgateway/wiki)
 - [CSOB eAPI 1.5](https://github.com/csob/paymentgateway/wiki/eAPI-1.5)
+- [CSOB eAPI 1.6](https://github.com/csob/paymentgateway/wiki/eAPI-1.6)
 - [Client documentation](https://github.com/Kdyby/CsobPaygateNette/blob/master/docs/en/index.md).
 
 
