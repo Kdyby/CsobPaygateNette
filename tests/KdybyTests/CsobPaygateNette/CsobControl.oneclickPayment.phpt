@@ -3,7 +3,7 @@
 /**
  * Test: Kdyby\CsobPaygateNette\CsobControl
  *
- * @testCase Kdyby\CsobPaygateNette\CsobControlRecurrentPaymentTest
+ * @testCase Kdyby\CsobPaygateNette\CsobControlOneclickPaymentTest
  */
 
 namespace KdybyTests\CsobPaygateNette;
@@ -25,30 +25,65 @@ require_once __DIR__ . '/../bootstrap.php';
 /**
  * @author Jiří Pudil <me@jiripudil.cz>
  */
-class CsobControlRecurrentPaymentTest extends CsobTestCase
+class CsobControlOneclickPaymentTest extends CsobTestCase
 {
 
 	protected function setUp()
 	{
 		parent::setUp();
-		$this->prepareContainer('default');
-
+		$this->prepareContainer('eapi16');
 		$this->mockSignature();
+		$payId = Nette\Utils\Random::generate();
 
-		$apiResponse = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
-			'payId' => Nette\Utils\Random::generate(),
+		$httpClientMock = \Mockery::mock(Kdyby\CsobPaymentGateway\IHttpClient::class);
+
+		$initResponse = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
+			'payId' => $payId,
+			'dttm' => (new \DateTime())->format('YmdGis'),
+			'resultCode' => 0,
+			'resultMessage' => 'OK',
+			'paymentStatus' => Payment::STATUS_REQUESTED,
+			'signature' => 'signature',
+		]));
+		$httpClientMock->shouldReceive('request')
+			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/v1.6/payment/oneclick/init', \Mockery::type('array'), \Mockery::type('string'))
+			->andReturn($initResponse);
+
+		$startResponse = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
+			'payId' => $payId,
+			'dttm' => (new \DateTime())->format('YmdGis'),
+			'resultCode' => 0,
+			'resultMessage' => 'OK',
+			'paymentStatus' => Payment::STATUS_PENDING,
+			'signature' => 'signature',
+		]));
+		$httpClientMock->shouldReceive('request')
+			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/v1.6/payment/oneclick/start', \Mockery::type('array'), \Mockery::type('string'))
+			->andReturn($startResponse);
+
+		$statusPendingResponse = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
+			'payId' => $payId,
+			'dttm' => (new \DateTime())->format('YmdGis'),
+			'resultCode' => 0,
+			'resultMessage' => 'OK',
+			'paymentStatus' => Payment::STATUS_PENDING,
+			'signature' => 'signature',
+		]));
+		$statusFinishedResponse = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
+			'payId' => $payId,
 			'dttm' => (new \DateTime())->format('YmdGis'),
 			'resultCode' => 0,
 			'resultMessage' => 'OK',
 			'paymentStatus' => Payment::STATUS_TO_CLEARING,
-			'authCode' => 123456,
 			'signature' => 'signature',
 		]));
 
-		$httpClientMock = \Mockery::mock(Kdyby\CsobPaymentGateway\IHttpClient::class);
+		$counter = 0;
 		$httpClientMock->shouldReceive('request')
-			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/v1.5/payment/recurrent', \Mockery::type('array'), \Mockery::type('string'))
-			->andReturn($apiResponse);
+			->with('GET', \Mockery::on(function ($arg) { return strpos($arg, 'payment/status') !== FALSE; }), \Mockery::type('array'), NULL)
+			->andReturnUsing(function () use (&$counter, $statusPendingResponse, $statusFinishedResponse) {
+				return ++$counter > 2 ? $statusFinishedResponse : $statusPendingResponse;
+			});
 
 		$this->replaceService('csobPaygate.httpClient', $httpClientMock);
 
@@ -58,7 +93,7 @@ class CsobControlRecurrentPaymentTest extends CsobTestCase
 
 
 
-	public function testRecurrentPayment()
+	public function testOneclickPayment()
 	{
 		$this->presenter['csob']->onInit[] = function (CsobControl $control, Payment $payment) {
 			$payment->setOrderNo(15000002)
@@ -104,4 +139,4 @@ class CsobControlRecurrentPaymentTest extends CsobTestCase
 
 }
 
-\run(new CsobControlRecurrentPaymentTest());
+\run(new CsobControlOneclickPaymentTest());

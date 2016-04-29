@@ -57,10 +57,10 @@ class CsobControlErrorTest extends CsobTestCase
 
 		$httpClientMock = \Mockery::mock(Kdyby\CsobPaymentGateway\IHttpClient::class);
 		$httpClientMock->shouldReceive('request')
-			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/payment/init', \Mockery::type('array'), \Mockery::type('string'))
+			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/v1.5/payment/init', \Mockery::type('array'), \Mockery::type('string'))
 			->andReturn($apiResponse);
 		$httpClientMock->shouldReceive('request')
-			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/payment/recurrent', \Mockery::type('array'), \Mockery::type('string'))
+			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/v1.5/payment/recurrent', \Mockery::type('array'), \Mockery::type('string'))
 			->andReturn($recurrentResponse);
 
 		$this->replaceService('csobPaygate.httpClient', $httpClientMock);
