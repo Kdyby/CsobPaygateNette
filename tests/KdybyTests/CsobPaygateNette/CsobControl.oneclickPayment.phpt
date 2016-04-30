@@ -107,7 +107,7 @@ class CsobControlOneclickPaymentTest extends CsobTestCase
 			Assert::notSame(NULL, $response->getPayId());
 			Assert::same(0, $response->getResultCode());
 			Assert::same('OK', $response->getResultMessage());
-			Assert::same(Payment::STATUS_TO_CLEARING, $response->getPaymentStatus());
+			Assert::same(Payment::STATUS_PENDING, $response->getPaymentStatus());
 		};
 
 		$this->presenter['csob']->onProcess[] = function (CsobControl $control, RedirectResponse $redirect) {
@@ -118,7 +118,13 @@ class CsobControlOneclickPaymentTest extends CsobTestCase
 			Assert::notSame(NULL, $response->getPayId());
 			Assert::same(0, $response->getResultCode());
 			Assert::same('OK', $response->getResultMessage());
-			Assert::same(Payment::STATUS_TO_CLEARING, $response->getPaymentStatus());
+
+			if ($response->getPaymentStatus() === Payment::STATUS_PENDING) {
+				$control->pollStatus($response->getPayId());
+
+			} else {
+				Assert::same(Payment::STATUS_TO_CLEARING, $response->getPaymentStatus());
+			}
 
 			$control->getPresenter()->terminate();
 		};

@@ -3,7 +3,7 @@
 /**
  * Test: Kdyby\CsobPaygateNette\CsobControl
  *
- * @testCase Kdyby\CsobPaygateNette\CsobControlEapi16DeclinedTest
+ * @testCase Kdyby\CsobPaygateNette\CsobControlOneclickPaymentDeclinedTest
  */
 
 namespace KdybyTests\CsobPaygateNette;
@@ -26,7 +26,7 @@ require_once __DIR__ . '/../bootstrap.php';
 /**
  * @author Jiří Pudil <me@jiripudil.cz>
  */
-class CsobControlEapi16DeclinedTest extends CsobTestCase
+class CsobControlOneclickPaymentDeclinedTest extends CsobTestCase
 {
 
 	protected function setUp()
@@ -107,7 +107,7 @@ class CsobControlEapi16DeclinedTest extends CsobTestCase
 		$this->presenter['csob']->onCreated[] = function (CsobControl $control, Response $response) {
 			Assert::same(0, $response->getResultCode());
 			Assert::same("OK", $response->getResultMessage());
-			Assert::same(Payment::STATUS_DECLINED, $response->getPaymentStatus());
+			Assert::same(Payment::STATUS_PENDING, $response->getPaymentStatus());
 		};
 
 		$this->presenter['csob']->onProcess[] = function (CsobControl $control, RedirectResponse $redirect) {
@@ -115,7 +115,12 @@ class CsobControlEapi16DeclinedTest extends CsobTestCase
 		};
 
 		$this->presenter['csob']->onResponse[] = function (CsobControl $control, Response $response) {
-			Assert::fail('The response handler should not be triggered.');
+			Assert::notSame(NULL, $response);
+			Assert::same(0, $response->getResultCode());
+			Assert::same("OK", $response->getResultMessage());
+			Assert::same(Payment::STATUS_PENDING, $response->getPaymentStatus());
+
+			$control->pollStatus($response->getPayId());
 		};
 
 		$this->presenter['csob']->onError[] = function (CsobControl $control, Kdyby\CsobPaymentGateway\Exception $exception, Response $response = NULL) {
@@ -136,4 +141,4 @@ class CsobControlEapi16DeclinedTest extends CsobTestCase
 
 }
 
-\run(new CsobControlEapi16DeclinedTest());
+\run(new CsobControlOneclickPaymentDeclinedTest());
