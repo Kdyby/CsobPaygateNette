@@ -1,6 +1,3 @@
-parameters:
-	vendorDir: %testsDir%/../vendor
-
 php:
 	date.timezone: Europe/Prague
 

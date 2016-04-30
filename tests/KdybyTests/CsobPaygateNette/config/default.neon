@@ -3,6 +3,6 @@ csobPaygate:
 	shopName: "www.kdyby.org"
 	sandbox:
 		privateKey:
-			path: %vendorDir%/kdyby/csob-payment-gateway/examples/keys/rsa_A1029DTmM7.key
+			path: %testsDir%/KdybyTests/CsobPaygateNette/keys/rsa_A1029DTmM7.key
 			password: ""
 	returnMethod: GET

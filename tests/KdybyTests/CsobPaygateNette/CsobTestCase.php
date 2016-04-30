@@ -101,7 +101,7 @@ abstract class CsobTestCase extends Tester\TestCase
 
 	protected function mockSignature($verified = TRUE)
 	{
-		$privateKey = new Certificate\PrivateKey(__DIR__ . '/../../../vendor/kdyby/csob-payment-gateway/examples/keys/rsa_A1029DTmM7.key', NULL);
+		$privateKey = new Certificate\PrivateKey(__DIR__ . '/keys/rsa_A1029DTmM7.key', NULL);
 		$publicKey = new Certificate\PublicKey(Configuration::DEFAULT_CSOB_SANDBOX_CERT);
 
 		$signatureMock = \Mockery::mock(Kdyby\CsobPaymentGateway\Message\Signature::class, [$privateKey, $publicKey])->shouldDeferMissing();
