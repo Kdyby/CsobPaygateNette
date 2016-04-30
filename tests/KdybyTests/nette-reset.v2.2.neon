@@ -1,0 +1,25 @@
+parameters:
+	vendorDir: %testsDir%/../vendor
+
+php:
+	date.timezone: Europe/Prague
+
+extensions:
+	requestStack: Kdyby\RequestStack\DI\RequestStackExtension
+
+services:
+	router: Nette\Application\Routers\SimpleRouter
+
+	cacheStorage:
+		class: Nette\Caching\Storages\MemoryStorage
+
+nette:
+	security:
+		frames: null
+
+	session:
+		autoStart: false
+
+	application:
+		mapping:
+			*: KdybyTests\CsobPaygateNette\*Presenter
