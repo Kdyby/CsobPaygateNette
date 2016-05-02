@@ -3,7 +3,7 @@
 /**
  * Test: Kdyby\CsobPaygateNette\CsobControl
  *
- * @testCase Kdyby\CsobPaygateNette\CsobControlRecurrentPaymentTest
+ * @testCase Kdyby\CsobPaygateNette\CsobControlEapi16ErrorTest
  */
 
 namespace KdybyTests\CsobPaygateNette;
@@ -14,6 +14,8 @@ use Kdyby\CsobPaymentGateway\Configuration;
 use Kdyby\CsobPaymentGateway\Message\RedirectResponse;
 use Kdyby\CsobPaymentGateway\Message\Response;
 use Kdyby\CsobPaymentGateway\Payment;
+use Kdyby\CsobPaymentGateway\PaymentException;
+use Kdyby\CsobPaymentGateway\PaymentNotInValidStateException;
 use Nette;
 use Tester;
 use Tester\Assert;
@@ -25,30 +27,28 @@ require_once __DIR__ . '/../bootstrap.php';
 /**
  * @author Jiří Pudil <me@jiripudil.cz>
  */
-class CsobControlRecurrentPaymentTest extends CsobTestCase
+class CsobControlEapi16ErrorTest extends CsobTestCase
 {
 
 	protected function setUp()
 	{
 		parent::setUp();
-		$this->prepareContainer('default');
+		$this->prepareContainer('eapi16');
 
 		$this->mockSignature();
 
-		$apiResponse = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
+		$oneclickResponse = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
 			'payId' => Nette\Utils\Random::generate(),
 			'dttm' => (new \DateTime())->format('YmdGis'),
-			'resultCode' => 0,
-			'resultMessage' => 'OK',
-			'paymentStatus' => Payment::STATUS_TO_CLEARING,
-			'authCode' => 123456,
+			'resultCode' => PaymentException::PAYMENT_NOT_IN_VALID_STATE,
+			'resultMessage' => "orig payment not authorized",
 			'signature' => 'signature',
 		]));
 
 		$httpClientMock = \Mockery::mock(Kdyby\CsobPaymentGateway\IHttpClient::class);
 		$httpClientMock->shouldReceive('request')
-			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/v1.5/payment/recurrent', \Mockery::type('array'), \Mockery::type('string'))
-			->andReturn($apiResponse);
+			->with('POST', Configuration::DEFAULT_SANDBOX_URL . '/v1.6/payment/oneclick/init', \Mockery::type('array'), \Mockery::type('string'))
+			->andReturn($oneclickResponse);
 
 		$this->replaceService('csobPaygate.httpClient', $httpClientMock);
 
@@ -58,7 +58,7 @@ class CsobControlRecurrentPaymentTest extends CsobTestCase
 
 
 
-	public function testRecurrentPayment()
+	public function testOneclickError()
 	{
 		$this->presenter['csob']->onInit[] = function (CsobControl $control, Payment $payment) {
 			$payment->setOrderNo(15000002)
@@ -69,10 +69,9 @@ class CsobControlRecurrentPaymentTest extends CsobTestCase
 		};
 
 		$this->presenter['csob']->onCreated[] = function (CsobControl $control, Response $response) {
-			Assert::notSame(NULL, $response->getPayId());
-			Assert::same(0, $response->getResultCode());
-			Assert::same('OK', $response->getResultMessage());
-			Assert::same(Payment::STATUS_TO_CLEARING, $response->getPaymentStatus());
+			Assert::same(PaymentException::PAYMENT_NOT_IN_VALID_STATE, $response->getResultCode());
+			Assert::same("orig payment not authorized", $response->getResultMessage());
+			Assert::null($response->getPaymentStatus());
 		};
 
 		$this->presenter['csob']->onProcess[] = function (CsobControl $control, RedirectResponse $redirect) {
@@ -80,28 +79,25 @@ class CsobControlRecurrentPaymentTest extends CsobTestCase
 		};
 
 		$this->presenter['csob']->onResponse[] = function (CsobControl $control, Response $response) {
-			Assert::notSame(NULL, $response->getPayId());
-			Assert::same(0, $response->getResultCode());
-			Assert::same('OK', $response->getResultMessage());
-			Assert::same(Payment::STATUS_TO_CLEARING, $response->getPaymentStatus());
-
-			$control->getPresenter()->terminate();
+			Assert::fail('The response handler should not be triggered.');
 		};
 
 		$this->presenter['csob']->onError[] = function (CsobControl $control, Kdyby\CsobPaymentGateway\Exception $exception, Response $response = NULL) {
-			Assert::fail('The error handler should not be triggered.');
+			Assert::type(PaymentNotInValidStateException::class, $exception);
+			Assert::same(PaymentException::PAYMENT_NOT_IN_VALID_STATE, $exception->getCode());
+			Assert::same("orig payment not authorized", $exception->getMessage());
+
+			Assert::notSame(NULL, $response);
+			Assert::same(PaymentException::PAYMENT_NOT_IN_VALID_STATE, $response->getResultCode());
+			Assert::same("orig payment not authorized", $response->getResultMessage());
+			Assert::null($response->getPaymentStatus());
+
+			$control->getPresenter()->terminate();
 		};
 
 		$this->runPresenterAction('pay');
 	}
 
-
-
-	protected function tearDown()
-	{
-		\Mockery::close();
-	}
-
 }
 
-\run(new CsobControlRecurrentPaymentTest());
+\run(new CsobControlEapi16ErrorTest());

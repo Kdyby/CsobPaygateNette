@@ -100,7 +100,13 @@ class CsobControl extends Nette\Application\UI\Control
 		if ($payment->getOriginalPayId()) {
 			$response = NULL;
 			try {
-				$response = $this->client->paymentRecurrent($payment);
+				if ($this->client->isRecurrentPaymentSupported()) {
+					$response = $this->client->paymentRecurrent($payment);
+
+				} else {
+					$initResponse = $this->client->paymentOneclickInit($payment);
+					$response = $this->client->paymentOneclickStart($initResponse->getPayId());
+				}
 
 			} catch (Csob\Exception $e) {
 				if ($response === NULL && $e instanceof Csob\ExceptionWithResponse) {
@@ -143,6 +149,43 @@ class CsobControl extends Nette\Application\UI\Control
 		}
 	}
 
+
+
+	/**
+	 * Used after payment/oneclick/start to poll for payment status. Conforms to the eAPI docs:
+	 *
+	 * > Note: We recommend to call payment/status not earlier than 2-3 seconds after payment/oneclick/start call.
+	 * > Should the payment status be still 2 (in progress), please poll the status every 5 seconds.
+	 * > The gateway depends performance of multiple systems beyond our control while authorising the transaction
+	 * > which can (in the worst case) take up to 60 seconds.
+	 *
+	 * @param string $paymentId
+	 * @return Csob\Message\Response
+	 * @see https://github.com/csob/paymentgateway/wiki/eAPI-v1.6-EN#return-values-7
+	 */
+	public function pollStatus($paymentId)
+	{
+		sleep(3);
+		try {
+			while (TRUE) {
+				$response = $this->client->paymentStatus($paymentId);
+				if ($response->getPaymentStatus() !== Csob\Payment::STATUS_PENDING) {
+					$this->onResponse($this, $response);
+				}
+
+				$response = NULL;
+				sleep(5);
+			}
+
+		} catch (Csob\Exception $e) {
+			if ($response === NULL && $e instanceof Csob\ExceptionWithResponse) {
+				$response = $e->getResponse();
+			}
+
+			$this->onError($this, $e, $response);
+			return;
+		}
+	}
 
 
 	/**

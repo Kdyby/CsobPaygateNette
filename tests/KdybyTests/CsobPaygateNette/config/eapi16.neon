@@ -1,0 +1,9 @@
+csobPaygate:
+	version: '1.6'
+	merchantId: 'A1029DTmM7'
+	shopName: "www.kdyby.org"
+	sandbox:
+		privateKey:
+			path: %testsDir%/KdybyTests/CsobPaygateNette/keys/rsa_A1029DTmM7.key
+			password: ""
+	returnMethod: GET
