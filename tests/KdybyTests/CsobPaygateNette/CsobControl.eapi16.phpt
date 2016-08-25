@@ -65,7 +65,7 @@ class CsobControlEapi16Test extends CsobTestCase
 		};
 
 		$this->presenter['csob']->onError[] = function (CsobControl $control, Kdyby\CsobPaymentGateway\Exception $exception, Response $response = NULL) {
-			Assert::fail('The error handler should not be triggered.');
+			Assert::fail(sprintf('The error handler should not be triggered: %s', $exception->getMessage()));
 		};
 
 		$response = $this->runPresenterAction('pay');
