@@ -4,6 +4,7 @@ Kdyby/CsobPaygateNette
 [![Build Status](https://travis-ci.org/Kdyby/CsobPaygateNette.svg?branch=master)](https://travis-ci.org/Kdyby/CsobPaygateNette)
 [![Downloads this Month](https://img.shields.io/packagist/dm/kdyby/csob-paygate-nette.svg)](https://packagist.org/packages/kdyby/csob-paygate-nette)
 [![Latest stable](https://img.shields.io/packagist/v/kdyby/csob-paygate-nette.svg)](https://packagist.org/packages/kdyby/csob-paygate-nette)
+[![Coverage Status](https://coveralls.io/repos/github/Kdyby/CsobPaygateNette/badge.svg?branch=master)](https://coveralls.io/github/Kdyby/CsobPaygateNette?branch=master)
 [![Join the chat at https://gitter.im/Kdyby/Help](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Kdyby/Help)
 
 
