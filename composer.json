@@ -17,7 +17,7 @@
 		"issues": "https://github.com/Kdyby/CsobPaygateNette/issues"
 	},
 	"require": {
-		"kdyby/csob-payment-gateway": "^2.0@dev",
+		"kdyby/csob-payment-gateway": "dev-iframe-checkout",
 
 		"nette/application": "^2.2",
 		"nette/di": "^2.2",

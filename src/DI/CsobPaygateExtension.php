@@ -23,6 +23,7 @@ use Nette\Utils\Validators;
 
 /**
  * @author Filip Procházka <filip@prochazka.su>
+ * @author Jiří Pudil <me@jiripudil.cz>
  */
 class CsobPaygateExtension extends Nette\DI\CompilerExtension
 {
@@ -53,6 +54,7 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 		],
 		'returnMethod' => Request::POST,
 		'returnUrl' => NULL,
+		'checkout' => FALSE,
 		'logging' => FALSE,
 	];
 
@@ -76,6 +78,7 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 		Validators::assertField($config, 'shopName', 'string');
 		Validators::assertField($config, 'productionMode', 'bool');
 		Validators::assertField($config, 'returnMethod', 'string|pattern:(GET|POST)');
+		Validators::assertField($config, 'checkout', 'bool');
 
 		$envConfig = $config['productionMode'] ? $config['production'] : $config['sandbox'];
 
@@ -98,7 +101,8 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 			->addSetup('setVersion', [$config['version']])
 			->addSetup('setUrl', [$envConfig['url']])
 			->addSetup('setReturnUrl', [$config['returnUrl']])
-			->addSetup('setReturnMethod', [$config['returnMethod']]);
+			->addSetup('setReturnMethod', [$config['returnMethod']])
+			->addSetup('setCheckoutEnabled', [$config['checkout']]);
 
 		$builder->addDefinition($this->prefix('httpClient'))
 			->setClass('Kdyby\CsobPaymentGateway\IHttpClient')
@@ -131,6 +135,13 @@ class CsobPaygateExtension extends Nette\DI\CompilerExtension
 		$builder->addDefinition($this->prefix('control'))
 			->setImplement('Kdyby\CsobPaygateNette\UI\ICsobControlFactory')
 			->setArguments([
+				$this->prefix('@client')
+			]);
+
+		$builder->addDefinition($this->prefix('checkoutControl'))
+			->setImplement('Kdyby\CsobPaygateNette\UI\ICsobCheckoutControlFactory')
+			->setArguments([
+				new Code\PhpLiteral('$paymentId'),
 				$this->prefix('@client')
 			]);
 	}

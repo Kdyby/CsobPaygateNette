@@ -20,10 +20,12 @@ use Nette\Http\IRequest;
 
 /**
  * @author Filip Procházka <filip@prochazka.su>
+ * @author Jiří Pudil <me@jiripudil.cz>
  *
  * @method onInit(CsobControl $control, Csob\Payment $request)
  * @method onCreated(CsobControl $control, Csob\Message\Response $response)
  * @method onProcess(CsobControl $control, Csob\Message\RedirectResponse $redirectUrl)
+ * @method onCheckout(CsobControl $control, string $paymentId)
  * @method onResponse(CsobControl $control, Csob\Message\Response $response)
  * @method onError(CsobControl $control, \Exception $e, Csob\Message\Response $response = NULL)
  */
@@ -45,11 +47,18 @@ class CsobControl extends Nette\Application\UI\Control
 	public $onCreated = [];
 
 	/**
-	 * Event on pay creating.
+	 * Event on payment processing.
 	 *
 	 * @var array|callable[]|\Closure[]
 	 */
 	public $onProcess = [];
+
+	/**
+	 * Event on iframe checkout.
+	 *
+	 * @var array|callable[]|\Closure[]
+	 */
+	public $onCheckout = [];
 
 	/**
 	 * Event on success response from gateway.
@@ -144,8 +153,13 @@ class CsobControl extends Nette\Application\UI\Control
 
 			$this->onCreated($this, $response);
 
-			$redirect = $this->client->paymentProcess($response->getPayId());
-			$this->onProcess($this, $redirect);
+			if ($this->client->isPaymentCheckoutEnabled() && $payment->isCheckoutAllowed()) {
+				$this->onCheckout($this, $response->getPayId());
+
+			} else {
+				$redirect = $this->client->paymentProcess($response->getPayId());
+				$this->onProcess($this, $redirect);
+			}
 		}
 	}
 
